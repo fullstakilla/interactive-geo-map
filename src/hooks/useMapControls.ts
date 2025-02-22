@@ -1,9 +1,15 @@
 import { useState } from "react";
+import { ProjectionConfig } from "react-simple-maps";
 import { useGesture } from "react-use-gesture";
 
 const MINIMAL_SCALE = 2;
-const MAXIMAL_SCALE = 5;
+const MAXIMAL_SCALE = 10;
 const SCALE_STEP = 1;
+
+export const projectionConfig: ProjectionConfig = {
+    scale: 65,
+    center: [0, 0],
+};
 
 export const useMapControls = () => {
     const [transform, setTransform] = useState({
@@ -22,7 +28,6 @@ export const useMapControls = () => {
         }) => {
             const { scale } = transform;
 
-            // Ограничения на перетаскивание
             const BOUNDS_X = 170 * scale;
             const BOUNDS_Y_UP = 220 * scale;
             const BOUNDS_Y_DOWN = 70 * scale;
@@ -37,33 +42,36 @@ export const useMapControls = () => {
                 Math.min(memo.translateY + my, BOUNDS_Y_UP)
             );
 
-            setTransform((prev) => ({
-                ...prev,
+            setTransform({
+                ...transform,
                 translateX: newTranslateX,
                 translateY: newTranslateY,
-            }));
+            });
 
             return memo;
         },
         onWheel: ({ delta: [, dy] }) => {
             if (dy === 0) return;
 
-            setTransform((prev) => {
-                const newScale =
-                    dy > 0
-                        ? Math.max(prev.scale - SCALE_STEP, MINIMAL_SCALE)
-                        : Math.min(prev.scale + SCALE_STEP, MAXIMAL_SCALE);
+            const newScale =
+                dy > 0
+                    ? Math.max(transform.scale - SCALE_STEP, MINIMAL_SCALE)
+                    : Math.min(transform.scale + SCALE_STEP, MAXIMAL_SCALE);
 
-                const scaleFactor = newScale / prev.scale;
+            if (newScale === transform.scale) return;
 
-                return {
-                    scale: newScale,
-                    translateX: prev.translateX * scaleFactor,
-                    translateY: prev.translateY * scaleFactor,
-                };
+            const scaleFactor = newScale / transform.scale;
+
+            setTransform({
+                scale: newScale,
+                translateX: transform.translateX * scaleFactor,
+                translateY: transform.translateY * scaleFactor,
             });
         },
     });
 
-    return { transform, bind };
+    return {
+        transform,
+        bind,
+    };
 };

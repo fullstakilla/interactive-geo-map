@@ -1,19 +1,18 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
-import { useMapControls } from "@/hooks/useMapControls";
+import MainPanel from "@/components/ui/main-panel";
+import { LoginDialog } from "@/components/login-dialog";
+import { HelloToast } from "@/components/ui/hello-toast";
 import { WorldMap } from "@/components/world-map";
+import { NoteDialog } from "@/components/note-dialog";
 
-const DraggableWorldMap = () => {
-    const { transform, bind } = useMapControls();
-
+const DraggableWorldMap = async () => {
     return (
-        <div
-            className="relative w-screen h-screen overflow-hidden bg-[#a4d9eb]"
-            {...bind()}
-        >
-            <WorldMap transform={transform} />
-        </div>
+        <>
+            <WorldMap />
+            <HelloToast />
+            <LoginDialog />
+            <MainPanel />
+            <NoteDialog />
+        </>
     );
 };
 

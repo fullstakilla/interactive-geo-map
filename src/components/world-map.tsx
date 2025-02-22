@@ -1,49 +1,57 @@
-import React from "react";
-import {
-    ComposableMap,
-    Geographies,
-    ProjectionConfig,
-} from "react-simple-maps";
+"use client";
+
+import { ComposableMap, Geographies } from "react-simple-maps";
 import worldData from "@/data/world-110m.json";
 import { GeographyItem } from "./geography-item";
+import { useMemo, useCallback, memo } from "react";
+import { projectionConfig, useMapControls } from "@/hooks/useMapControls";
+import { NoteMarkers } from "./note-markers";
+import { useNotes } from "@/hooks/useNotes";
 
-const projection: ProjectionConfig = {
-    scale: 80,
-    center: [0, 0],
-};
+const MemoizedGeographies = memo(Geographies);
 
-interface WorldMapProps {
-    transform: {
-        scale: number;
-        translateX: number;
-        translateY: number;
-    };
-}
+export const WorldMap: React.FC = () => {
+    const { transform, bind } = useMapControls();
+    const { notes, isLoading, error } = useNotes();
 
-export const WorldMap: React.FC<WorldMapProps> = ({ transform }) => {
+    const handleTransformStyle = useMemo(
+        () => ({
+            background: "transparent",
+            transform: `translate(${transform.translateX}px, ${transform.translateY}px) scale(${transform.scale})`,
+            transformOrigin: "center center",
+            cursor: "grab",
+        }),
+        [transform.translateX, transform.translateY, transform.scale, notes]
+    );
+
+    const renderGeographies = useCallback(
+        ({ geographies }: { geographies: any[] }) =>
+            geographies.map((geo, i) => {
+                if (geo.properties.continent === "Antarctica") return null;
+                return <GeographyItem key={i} geo={geo} />;
+            }),
+        []
+    );
+
     return (
-        <ComposableMap
-            projection="geoMercator"
-            projectionConfig={projection}
-            className="w-full h-full outline-none focus:outline-none"
-            style={{
-                background: "transparent",
-                transform: `translate(${transform.translateX}px, ${transform.translateY}px) scale(${transform.scale})`,
-                transformOrigin: "center center",
-                cursor: "grab",
-            }}
+        <div
+            className="
+            relative
+            w-screen h-screen overflow-hidden bg-[#a4d9eb]"
+            {...bind()}
         >
-            <Geographies geography={worldData} stroke="none">
-                {({ geographies }) =>
-                    geographies.map((geo, i) => {
-                        // вода + антарктида
-                        if (geo.properties.continent === "Antarctica")
-                            return null;
+            <ComposableMap
+                projection="geoMercator"
+                projectionConfig={projectionConfig}
+                className="w-full h-full bg-red-50"
+                style={handleTransformStyle}
+            >
+                <MemoizedGeographies geography={worldData}>
+                    {renderGeographies}
+                </MemoizedGeographies>
 
-                        return <GeographyItem key={i} geo={geo} />;
-                    })
-                }
-            </Geographies>
-        </ComposableMap>
+                {!isLoading && !error && <NoteMarkers notes={notes} />}
+            </ComposableMap>
+        </div>
     );
 };

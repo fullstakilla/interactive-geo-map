@@ -1,4 +1,3 @@
-import React from "react";
 import { Geography } from "react-simple-maps";
 import { toast } from "sonner";
 
@@ -14,10 +13,10 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({ geo }) => {
     return (
         <Geography
             geography={geo}
-            fill="#ccc"
+            fill={geo.properties.name === "Antarctica" ? "#fff" : "#ccc"}
             stroke="black"
             strokeWidth={0.1}
-            className="transition-colors duration-200 outline-none focus:outline-none cursor-pointer"
+            className="transition-colors duration-200 outline-none focus:outline-none cursor-default"
             onMouseEnter={(e: any) => {
                 e.target.style.fill = "#ff6347";
             }}
