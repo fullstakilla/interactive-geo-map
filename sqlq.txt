@@ -1,0 +1,84 @@
+WITH RECURSIVE numbers AS (
+    SELECT 1 as num
+    UNION ALL
+    SELECT num + 1 FROM numbers WHERE num < 100
+),
+regions AS (
+    SELECT * FROM (VALUES
+        -- Северная Америка
+        ('North America', ARRAY[-98.0, 39.0], 30.0, 20.0),
+        -- Европа
+        ('Europe', ARRAY[15.0, 54.0], 30.0, 15.0),
+        -- Азия
+        ('Asia', ARRAY[100.0, 35.0], 40.0, 25.0),
+        -- Южная Америка
+        ('South America', ARRAY[-58.0, -20.0], 25.0, 20.0),
+        -- Африка
+        ('Africa', ARRAY[20.0, 0.0], 30.0, 25.0),
+        -- Океания
+        ('Oceania', ARRAY[135.0, -25.0], 25.0, 20.0),
+        -- Юго-Восточная Азия
+        ('Southeast Asia', ARRAY[115.0, 15.0], 20.0, 15.0)
+    ) AS t(region, base_coords, lng_spread, lat_spread)
+),
+messages AS (
+    SELECT * FROM (VALUES
+        ('Exploring the local culture'),
+        ('Beautiful sunset view here'),
+        ('Amazing architecture'),
+        ('Local food is incredible'),
+        ('Meeting wonderful people'),
+        ('Perfect weather today'),
+        ('Historical landmarks everywhere'),
+        ('City life at its best'),
+        ('Nature is breathtaking'),
+        ('Unforgettable experience'),
+        ('Traditional market visit'),
+        ('Street art discovery'),
+        ('Urban adventures'),
+        ('Peaceful morning'),
+        ('Busy city center')
+    ) AS t(text)
+)
+
+INSERT INTO "Note" ("id", "content", "userName", "userEmail", "userLocation", "socialUrl", "createdAt")
+SELECT 
+    num::text as id,
+    (
+        SELECT text || ' ' || 
+        CASE (floor(random() * 8)::int)
+            WHEN 0 THEN '🌅'
+            WHEN 1 THEN '🌆'
+            WHEN 2 THEN '🏛️'
+            WHEN 3 THEN '🍜'
+            WHEN 4 THEN '🎭'
+            WHEN 5 THEN '⛩️'
+            WHEN 6 THEN '🏰'
+            WHEN 7 THEN '🌇'
+        END || ' from ' || region
+        FROM messages
+        OFFSET floor(random() * 15)
+        LIMIT 1
+    ) as content,
+    'Explorer#' || num::text as userName,
+    'explorer' || num::text || '@example.com' as userEmail,
+    ARRAY[
+        -- Добавляем случайное отклонение к базовым координатам региона
+        base_coords[1] + (random() * lng_spread - (lng_spread / 2)),
+        base_coords[2] + (random() * lat_spread - (lat_spread / 2))
+    ] as userLocation,
+    CASE (num % 4)
+        WHEN 0 THEN 'https://instagram.com/explorer' || num::text
+        WHEN 1 THEN 'https://twitter.com/explorer' || num::text
+        WHEN 2 THEN 'https://youtube.com/user' || num::text
+        ELSE NULL
+    END as socialUrl,
+    NOW() - (random() * interval '30 days') as createdAt
+FROM 
+    numbers
+    CROSS JOIN LATERAL (
+        SELECT region, base_coords, lng_spread, lat_spread
+        FROM regions
+        OFFSET floor(random() * 7)
+        LIMIT 1
+    ) r;

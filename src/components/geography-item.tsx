@@ -13,7 +13,7 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({ geo }) => {
     return (
         <Geography
             geography={geo}
-            fill={geo.properties.name === "Antarctica" ? "#fff" : "#ccc"}
+            fill="#ccc"
             stroke="black"
             strokeWidth={0.1}
             className="transition-colors duration-200 outline-none focus:outline-none cursor-default"

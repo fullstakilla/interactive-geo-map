@@ -1,26 +1,24 @@
-import { useNoteDialog } from "@/providers/note-dialog-context";
 import { Trash2 } from "lucide-react";
 import { Button } from "./button";
 import { deleteNote } from "@/actions/notes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
-import { useNotes } from "@/hooks/useNotes";
 
 interface DeleteNoteButtonProps {
     noteId: string;
     className?: string;
     ownerEmail: string;
+    onSubmit: () => void;
 }
 
 export default function DeleteNoteButton({
     noteId,
     className,
     ownerEmail,
+    onSubmit,
 }: DeleteNoteButtonProps) {
     const { data: session } = useSession();
-    const { closeDialog } = useNoteDialog();
-    const { mutateNotes } = useNotes();
 
     if (!session || !session.user || session.user.email !== ownerEmail)
         return null;
@@ -28,11 +26,8 @@ export default function DeleteNoteButton({
     const handleDelete = async () => {
         const result = await deleteNote(noteId);
         if (result.success) {
-            mutateNotes((currentNotes) =>
-                currentNotes.filter((note) => note.id !== noteId)
-            );
-            toast.success("Deleting from the map...");
-            closeDialog();
+            toast.success("Your note was deleted.");
+            onSubmit();
         } else {
             toast.error(result.error || "Failed to delete note");
         }

@@ -18,11 +18,11 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import { ArrowDown } from "lucide-react";
 import { useState } from "react";
 
-export const LoginDialog: React.FC = () => {
+export const AuthDialog: React.FC = () => {
     const { data: session, status } = useSession();
 
     if (status == "loading") {

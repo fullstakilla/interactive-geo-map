@@ -9,17 +9,19 @@ import {
     Dialog,
     DialogClose,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { createNote } from "@/actions/notes";
-import { getCurrentLocation } from "@/lib/getCurrentLocation";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { useRef } from "react";
 import { useNotes } from "@/hooks/useNotes";
+import { useNotesStore } from "@/store/notes";
+import { getCurrentLocation } from "@/actions/location";
 
 export const noteSchema = z.object({
     userName: z.string().min(1, "Name is required"),
@@ -51,7 +53,7 @@ interface AddNoteFormProps {
 
 export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const { mutateNotes } = useNotes();
+    const { fetchNotes } = useNotesStore();
 
     const {
         register,
@@ -94,7 +96,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
                 return;
             }
 
-            mutateNotes((currentNotes) => [...currentNotes, result.data!]);
+            fetchNotes();
 
             toast.dismiss(submitToast);
             toast.success("Note created successfully! Placing on the map...");
@@ -119,6 +121,9 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Create New Post</DialogTitle>
+                    <DialogDescription>
+                        Make sure to approve your geolocation after submitting.
+                    </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
