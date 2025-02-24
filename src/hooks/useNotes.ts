@@ -1,4 +1,4 @@
-import { useNotesStore } from "@/store/notes";
+import { useNotesStore } from "@/store/useNotesStore";
 import { useEffect } from "react";
 
 export function useNotes() {

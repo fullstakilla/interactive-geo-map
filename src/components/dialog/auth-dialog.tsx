@@ -1,5 +1,3 @@
-"use client";
-
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -19,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { ArrowDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 export const AuthDialog: React.FC = () => {
@@ -29,16 +27,18 @@ export const AuthDialog: React.FC = () => {
         return null;
     }
 
+    console.log("auth-dialog render");
+
     if (session && session.user) {
         return (
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        className="absolute right-10 top-3 z-50"
+                        className="absolute right-10 top-3 z-50 flex items-center"
                         variant={"secondary"}
                     >
                         {session.user.name}
-                        <ArrowDown />
+                        <ChevronDown />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
@@ -54,6 +54,7 @@ export const AuthDialog: React.FC = () => {
             </DropdownMenu>
         );
     }
+
     return (
         <Dialog>
             <DialogTrigger asChild>
@@ -86,6 +87,7 @@ export const AuthDialog: React.FC = () => {
                         width={15}
                         height={15}
                         className="mt-[2px]"
+                        disabled={true}
                     />
                     <SignInButton
                         provider="google"
@@ -95,6 +97,7 @@ export const AuthDialog: React.FC = () => {
                         width={14}
                         height={14}
                         className="mt-[2px]"
+                        disabled={true}
                     />
                 </div>
                 <span className="text-muted-foreground text-sm">
@@ -110,9 +113,14 @@ export const AuthDialog: React.FC = () => {
     );
 };
 
-interface SignInButtonInterface extends ImageProps {
+interface SignInButtonInterface
+    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     text: string;
     provider: string;
+    src: string;
+    width: number;
+    height: number;
+    alt: string;
 }
 
 function SignInButton({
@@ -123,6 +131,7 @@ function SignInButton({
     height,
     alt,
     className,
+    disabled,
 }: SignInButtonInterface) {
     const [isLoading, setIsLoading] = useState(false);
 
@@ -140,7 +149,11 @@ function SignInButton({
     }
 
     return (
-        <Button variant={"outline"} onClick={handleClick} disabled={isLoading}>
+        <Button
+            variant={"outline"}
+            onClick={handleClick}
+            disabled={isLoading || disabled}
+        >
             <Image
                 src={src}
                 width={width}

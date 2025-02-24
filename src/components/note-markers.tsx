@@ -14,7 +14,7 @@ export default function NoteMarkers() {
 
     if (isLoading || error !== null || notes.length === 0) return null;
 
-    console.log("note markers render", notes);
+    console.log("note markers render");
 
     return (
         <>

@@ -1,5 +1,3 @@
-"use client";
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -20,8 +18,9 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { useRef } from "react";
 import { useNotes } from "@/hooks/useNotes";
-import { useNotesStore } from "@/store/notes";
+import { useNotesStore } from "@/store/useNotesStore";
 import { getCurrentLocation } from "@/actions/location";
+import { useSession } from "next-auth/react";
 
 export const noteSchema = z.object({
     userName: z.string().min(1, "Name is required"),
@@ -52,8 +51,11 @@ interface AddNoteFormProps {
 }
 
 export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
+    const { data: session } = useSession();
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const { fetchNotes } = useNotesStore();
+
+    console.log("add-note-form render");
 
     const {
         register,
@@ -63,14 +65,10 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     } = useForm<FormData>({
         resolver: zodResolver(noteSchema),
         defaultValues: {
-            userName: userName || "",
+            userName: session?.user.name || "",
             socialUrl: "https://instagram.com/...",
         },
     });
-
-    if (!userName) {
-        return null;
-    }
 
     const onSubmit = async (data: FormData) => {
         const submitToast = toast.loading("Creating your note...");
@@ -114,7 +112,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="p-5">
                     <span>➕</span>
                 </Button>
             </DialogTrigger>

@@ -16,7 +16,7 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({ geo }) => {
             fill="#ccc"
             stroke="black"
             strokeWidth={0.1}
-            className="transition-colors duration-200 outline-none focus:outline-none cursor-default"
+            className="transition-colors duration-200 focus:outline-none"
             onMouseEnter={(e: any) => {
                 e.target.style.fill = "#ff6347";
             }}
