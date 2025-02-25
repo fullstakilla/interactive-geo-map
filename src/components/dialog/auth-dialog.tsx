@@ -27,8 +27,6 @@ export const AuthDialog: React.FC = () => {
         return null;
     }
 
-    console.log("auth-dialog render");
-
     if (session && session.user) {
         return (
             <DropdownMenu>

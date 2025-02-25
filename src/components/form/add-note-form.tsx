@@ -16,11 +16,10 @@ import { toast } from "sonner";
 import { createNote } from "@/actions/notes";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-import { useRef } from "react";
-import { useNotes } from "@/hooks/useNotes";
-import { useNotesStore } from "@/store/useNotesStore";
+import { useEffect, useRef, useState } from "react";
 import { getCurrentLocation } from "@/actions/location";
 import { useSession } from "next-auth/react";
+import { useNotesStore } from "@/store/useNotesStore";
 
 export const noteSchema = z.object({
     userName: z.string().min(1, "Name is required"),
@@ -51,11 +50,10 @@ interface AddNoteFormProps {
 }
 
 export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
+    const [open, setOpen] = useState<boolean>(false);
     const { data: session } = useSession();
     const closeButtonRef = useRef<HTMLButtonElement>(null);
-    const { fetchNotes } = useNotesStore();
-
-    console.log("add-note-form render");
+    const fetchNotes = useNotesStore((state) => state.fetchNotes);
 
     const {
         register,
@@ -109,11 +107,39 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
         }
     };
 
+    useEffect(() => {
+        const down = (e: KeyboardEvent) => {
+            if (
+                (e.key === "a" ||
+                    e.key === "A" ||
+                    e.key === "ф" ||
+                    e.key === "Ф") &&
+                (e.metaKey || e.ctrlKey)
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                setOpen((open) => !open);
+            }
+        };
+        document.addEventListener("keydown", down, true);
+        return () => document.removeEventListener("keydown", down, true);
+    }, []);
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" className="p-5">
+                <Button
+                    variant="outline"
+                    className="gap-2 p-5"
+                    onClick={() => setOpen(true)}
+                >
                     <span>➕</span>
+                    <span className="hidden md:inline">
+                        Add a lovely note...
+                    </span>
+                    <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
+                        <span className="text-xs">⌘</span>A
+                    </kbd>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">

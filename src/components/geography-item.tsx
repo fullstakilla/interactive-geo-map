@@ -1,14 +1,17 @@
+import { cn } from "@/lib/utils";
+import { useGeoDataStore } from "@/store/useGeoDataStore";
 import { Geography } from "react-simple-maps";
-import { toast } from "sonner";
 
 interface GeographyItemProps {
     geo: any;
+    onClick: (geography: any) => void;
 }
 
-export const GeographyItem: React.FC<GeographyItemProps> = ({ geo }) => {
-    const handleClick = () => {
-        toast.success(`Clicked on: ${geo.properties.name}`);
-    };
+export const GeographyItem: React.FC<GeographyItemProps> = ({
+    geo,
+    onClick,
+}) => {
+    const pickedCountry = useGeoDataStore((state) => state.pickedCountry);
 
     return (
         <Geography
@@ -16,14 +19,11 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({ geo }) => {
             fill="#ccc"
             stroke="black"
             strokeWidth={0.1}
-            className="transition-colors duration-200 focus:outline-none"
-            onMouseEnter={(e: any) => {
-                e.target.style.fill = "#ff6347";
-            }}
-            onMouseLeave={(e: any) => {
-                e.target.style.fill = "#ccc";
-            }}
-            onClick={handleClick}
+            className={cn(
+                "transition-colors duration-200 focus:outline-none hover:fill-green-600",
+                pickedCountry === geo.properties.name ? "fill-green-600" : ""
+            )}
+            onClick={onClick}
         />
     );
 };

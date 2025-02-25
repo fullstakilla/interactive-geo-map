@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { Button } from "../ui/button";
 import {
     CommandEmpty,
@@ -9,25 +9,34 @@ import {
     CommandDialog,
 } from "../ui/command";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
-import { Country } from "@/types/TopoJSON";
-import { toast } from "sonner";
+import { useMapZoomStore } from "@/store/useMapZoomStore";
 
-export default function FindCountryBtn() {
+export default function CountrySearch() {
     const [open, setOpen] = useState<boolean>(false);
     const [search, setSearch] = useState("");
 
-    const { countries, isLoading } = useGeoDataStore();
+    const zoomToGeography = useMapZoomStore((state) => state.zoomToGeography);
+    const setPickedCountry = useGeoDataStore((state) => state.setPickedCountry);
+    const geoJSONData = useGeoDataStore((state) => state.geoJSONData);
 
     const filteredCountries = useMemo(() => {
-        if (!search) return countries;
+        if (!geoJSONData.length) return [];
+        if (!search) return geoJSONData;
 
         const searchLower = search.toLowerCase();
-        return countries.filter((country) =>
-            country.name.toLowerCase().includes(searchLower)
+        return geoJSONData.filter(
+            (geography) =>
+                geography.properties.name.toLowerCase().includes(searchLower) &&
+                geography.properties.name !== "Antarctica"
         );
-    }, [countries, search]);
+    }, [geoJSONData, search]);
 
-    console.log("find-country-btn render");
+    const handleSelect = useCallback((geography: any) => {
+        setSearch("");
+        setOpen(false);
+        setPickedCountry(geography.properties.name);
+        zoomToGeography(geography);
+    }, []);
 
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
@@ -46,12 +55,6 @@ export default function FindCountryBtn() {
         document.addEventListener("keydown", down, true);
         return () => document.removeEventListener("keydown", down, true);
     }, []);
-
-    const handleSelect = (country: Country) => {
-        toast.success(`Clicked on: ${country.name}`);
-        setSearch("");
-        setOpen(false);
-    };
 
     return (
         <>
@@ -72,27 +75,21 @@ export default function FindCountryBtn() {
                 aria-label="Find Country"
             >
                 <CommandInput
-                    placeholder={
-                        isLoading
-                            ? "Loading countries..."
-                            : "Search for a country..."
-                    }
+                    placeholder="Search for a country..."
                     value={search}
                     onValueChange={setSearch}
                 />
                 <CommandList>
-                    <CommandEmpty>
-                        {isLoading ? "Loading..." : "No countries found."}
-                    </CommandEmpty>
+                    <CommandEmpty>"No countries found."</CommandEmpty>
                     <CommandGroup heading="Countries">
-                        {filteredCountries.map((country) => (
+                        {filteredCountries.map((geography) => (
                             <CommandItem
-                                key={country.name}
-                                value={country.name}
-                                onSelect={() => handleSelect(country)}
+                                key={geography.properties.name}
+                                value={geography.properties.name}
+                                onSelect={() => handleSelect(geography)}
                                 className="cursor-pointer"
                             >
-                                {country.name}
+                                {geography.properties.name}
                             </CommandItem>
                         ))}
                     </CommandGroup>

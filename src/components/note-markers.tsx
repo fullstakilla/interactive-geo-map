@@ -1,5 +1,4 @@
 import { Marker } from "react-simple-maps";
-import { useNotes } from "@/hooks/useNotes";
 import { DialogClose, DialogDescription, DialogTitle } from "./ui/dialog";
 import {
     Dialog,
@@ -8,9 +7,18 @@ import {
     DialogTrigger,
 } from "./ui/dialog";
 import DeleteNoteButton from "./ui/delete-note-button";
+import { useNotesStore } from "@/store/useNotesStore";
+import { useEffect } from "react";
 
 export default function NoteMarkers() {
-    const { notes, isLoading, error, refetch } = useNotes();
+    const notes = useNotesStore((state) => state.notes);
+    const isLoading = useNotesStore((state) => state.isLoading);
+    const error = useNotesStore((state) => state.error);
+    const fetchNotes = useNotesStore((state) => state.fetchNotes);
+
+    useEffect(() => {
+        fetchNotes();
+    }, [fetchNotes]);
 
     if (isLoading || error !== null || notes.length === 0) return null;
 
@@ -77,7 +85,7 @@ export default function NoteMarkers() {
                             <DeleteNoteButton
                                 noteId={note.id}
                                 ownerEmail={note.userEmail}
-                                onSubmit={refetch}
+                                onSubmit={fetchNotes}
                                 className="absolute -right-11"
                             />
                         </DialogClose>

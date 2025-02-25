@@ -23,7 +23,17 @@ export interface TopoJSON {
     bbox?: [number, number, number, number];
 }
 
-export interface Country {
-    name: string;
-    coordinates: number[];
+export interface GeoJSONFeature {
+    type: "Feature";
+    geometry: {
+        type: string;
+        coordinates: number[][][] | number[][][][];
+    };
+    properties: {
+        name: string;
+        [key: string]: any;
+    };
+    id: string;
+    rsmKey: string;
+    svgPath: string | null;
 }

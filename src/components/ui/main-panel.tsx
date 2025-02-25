@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { AddNoteForm } from "../form/add-note-form";
-import FindCountryBtn from "../dialog/find-country-btn";
+import CountrySearch from "../dialog/country-search";
 
 export default function MainPanel() {
     const { data: session } = useSession();
@@ -13,7 +13,7 @@ export default function MainPanel() {
 
     return (
         <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 z-50 p-2 flex gap-3">
-            <FindCountryBtn />
+            <CountrySearch />
             {session?.user && (
                 <AddNoteForm
                     userName={session.user.name ?? ""}
