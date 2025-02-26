@@ -32,7 +32,7 @@ export const AuthDialog: React.FC = () => {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        className="absolute right-10 top-3 z-50 flex items-center"
+                        className="absolute right-5 top-3 z-50 flex items-center"
                         variant={"secondary"}
                     >
                         {session.user.name}
@@ -58,7 +58,7 @@ export const AuthDialog: React.FC = () => {
             <DialogTrigger asChild>
                 <Button
                     variant={"secondary"}
-                    className="absolute right-10 top-3 z-50"
+                    className="absolute right-5 top-3 z-50"
                 >
                     Login
                 </Button>

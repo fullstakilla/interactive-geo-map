@@ -16,12 +16,12 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({
     return (
         <Geography
             geography={geo}
-            fill="#ccc"
-            stroke="black"
-            strokeWidth={0.1}
+            fill="#2C3639"
+            stroke="#DCD7C9"
+            strokeWidth={0.2}
             className={cn(
-                "transition-colors duration-200 focus:outline-none hover:fill-green-600",
-                pickedCountry === geo.properties.name ? "fill-green-600" : ""
+                "transition-colors duration-200 focus:outline-none hover:fill-[#445D48]", // бежевый для ховера
+                pickedCountry === geo.properties.name ? "fill-[#445D48]" : "" // тот же бежевый для выбранной страны
             )}
             onClick={onClick}
         />

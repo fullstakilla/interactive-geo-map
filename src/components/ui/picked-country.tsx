@@ -11,7 +11,7 @@ export function PickedCountry() {
             <div className="text-white text-xl font-bold text-center drop-shadow-md flex items-center justify-center">
                 You are in: {pickedCountry}
                 <button
-                    className="ml-2 inline-flex items-center justify-center rounded-full w-6 h-6 text-lg text-white/80 hover:text-white hover:bg-white/20 transition-colors"
+                    className="ml-2 inline-flex items-center justify-center rounded-full w-6 h-6 text-lg text-[#2C3639] hover:text-white hover:bg-white/20 transition-colors"
                     aria-label="Clear selected country"
                     onClick={() => setPickedCountry(null)}
                 >

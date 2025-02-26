@@ -9,6 +9,8 @@ import { ErrorCard } from "@/components/ui/error-card";
 import { PickedCountry } from "@/components/ui/picked-country";
 import { useEffect } from "react";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
+import { ProjectionSwitcher } from "@/components/ui/projection-switcher";
+import { MyLocationButton } from "@/components/ui/my-location-button";
 
 const DraggableWorldMap = () => {
     const geoData = useGeoDataStore((state) => state.data);
@@ -30,10 +32,12 @@ const DraggableWorldMap = () => {
 
     return (
         <>
+            <MyLocationButton />
             <PickedCountry />
             <HelloToast />
             <AuthDialog />
             <MainPanel />
+            <ProjectionSwitcher />
             <WorldMap geoData={geoData} />
         </>
     );

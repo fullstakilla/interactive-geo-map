@@ -4,10 +4,9 @@ import { create } from "zustand";
 interface MapZoomState {
     zoom: number;
     center: [number, number];
-    isZooming: boolean;
-    setZoom: (zoom: number) => void;
-    setCenter: (center: [number, number]) => void;
+    setPosition: (zoom: number, center: [number, number]) => void;
     zoomToGeography: (geography: any) => void;
+    zoomToCluster: (coordinates: [number, number]) => void;
 }
 
 export const projection = () => {
@@ -22,9 +21,8 @@ export const projection = () => {
 export const useMapZoomStore = create<MapZoomState>((set) => ({
     zoom: 1,
     center: [15, 38],
-    isZooming: false,
-    setZoom: (zoom: number) => set({ zoom }),
-    setCenter: (center: [number, number]) => set({ center }),
+    setPosition: (zoom: number, center: [number, number]) =>
+        set({ zoom, center }),
     zoomToGeography: (geography) => {
         const projectionInstance = projection();
         if (!projectionInstance) return;
@@ -33,15 +31,15 @@ export const useMapZoomStore = create<MapZoomState>((set) => ({
         const pathCentroid = path.centroid(geography);
         const centroid = projectionInstance?.invert?.(pathCentroid) ?? [15, 38];
 
-        set({ isZooming: true });
-
         set({
             center: centroid || [15, 38],
-            zoom: 3,
+            zoom: 5,
         });
-
-        setTimeout(() => {
-            set({ isZooming: false });
-        }, 200);
+    },
+    zoomToCluster: (coordinates: [number, number]) => {
+        set((state) => ({
+            center: coordinates,
+            zoom: state.zoom + 2,
+        }));
     },
 }));
