@@ -48,7 +48,7 @@ export const WorldMap: React.FC<WorldMapProps> = ({ geoData }) => {
 
     return (
         <div className="relative w-full h-screen">
-            <div className="absolute inset-0 bg-[url('/4049458.jpg')] bg-cover bg-center bg-no-repeat" />
+            <div className="absolute inset-0 bg-[url('/bg.jpg')] bg-cover bg-center bg-no-repeat" />
             <div className="absolute inset-0 bg-black/10" />
             <ComposableMap
                 projection={projection}
