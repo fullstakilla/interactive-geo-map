@@ -11,6 +11,7 @@ import { useEffect } from "react";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
 import { ProjectionSwitcher } from "@/components/ui/projection-switcher";
 import { MyLocationButton } from "@/components/ui/my-location-button";
+import { LanguageSwitcher } from "@/components/ui/language-switcher";
 
 const DraggableWorldMap = () => {
     const geoData = useGeoDataStore((state) => state.data);
@@ -32,6 +33,7 @@ const DraggableWorldMap = () => {
 
     return (
         <>
+            <LanguageSwitcher />
             <MyLocationButton />
             <PickedCountry />
             <HelloToast />

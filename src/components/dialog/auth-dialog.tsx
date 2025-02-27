@@ -19,9 +19,11 @@ import {
 } from "../ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 export const AuthDialog: React.FC = () => {
     const { data: session, status } = useSession();
+    const { t } = useAppSettingsStore();
 
     if (status == "loading") {
         return null;
@@ -40,13 +42,13 @@ export const AuthDialog: React.FC = () => {
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("auth.myAccount")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                         onSelect={() => signOut()}
                         variant="destructive"
                     >
-                        Sign Out
+                        {t("auth.signOut")}
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
@@ -60,17 +62,19 @@ export const AuthDialog: React.FC = () => {
                     variant={"secondary"}
                     className="absolute right-5 top-3 z-50"
                 >
-                    Login
+                    {t("auth.login")}
                 </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Login with socials</DialogTitle>
+                    <DialogTitle>{t("auth.loginWith")}</DialogTitle>
                 </DialogHeader>
                 <div className="w-full flex flex-col gap-2">
                     <SignInButton
                         provider="google"
-                        text="Sign in with Google"
+                        text={t("auth.signInWith", {
+                            provider: "Google" as any,
+                        })}
                         src="/google.svg"
                         alt="google logo"
                         width={13}
@@ -79,7 +83,7 @@ export const AuthDialog: React.FC = () => {
                     />
                     <SignInButton
                         provider="google"
-                        text="Sign in with Twitter"
+                        text={t("auth.signInWith", { provider: "Twitter" })}
                         src="/twitter.svg"
                         alt="twitter logo"
                         width={15}
@@ -89,7 +93,7 @@ export const AuthDialog: React.FC = () => {
                     />
                     <SignInButton
                         provider="google"
-                        text="Sign in with Discord"
+                        text={t("auth.signInWith", { provider: "Discord" })}
                         src="/discord.svg"
                         alt="discord logo"
                         width={14}
@@ -99,12 +103,7 @@ export const AuthDialog: React.FC = () => {
                     />
                 </div>
                 <span className="text-muted-foreground text-sm">
-                    By accessing this site, you agree to our Terms and
-                    Conditions and Privacy Policy. Posting harmful, misleading,
-                    or inappropriate content, including hate comments,
-                    negativity, or discussions about unrelated groups, is
-                    strictly prohibited to maintain a positive and respectful
-                    fan community.
+                    {t("auth.terms")}
                 </span>
             </DialogContent>
         </Dialog>
@@ -132,15 +131,16 @@ function SignInButton({
     disabled,
 }: SignInButtonInterface) {
     const [isLoading, setIsLoading] = useState(false);
+    const { t } = useAppSettingsStore();
 
     async function handleClick() {
         setIsLoading(true);
         try {
             await signIn(provider);
 
-            toast.success("Successfully signed in. Refreshing.");
+            toast.success(t("auth.success"));
         } catch (e) {
-            toast.error("Error happened. Try again.");
+            toast.error(t("auth.error"));
         } finally {
             setIsLoading(false);
         }

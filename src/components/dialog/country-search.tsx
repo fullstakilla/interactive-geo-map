@@ -10,8 +10,10 @@ import {
 } from "../ui/command";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
 import { useMapZoomStore } from "@/store/useMapZoomStore";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 export default function CountrySearch() {
+    const { t } = useAppSettingsStore();
     const [open, setOpen] = useState<boolean>(false);
     const [search, setSearch] = useState("");
 
@@ -64,9 +66,10 @@ export default function CountrySearch() {
                 className="gap-2 p-5"
             >
                 <span>🔍</span>
-                <span className="hidden md:inline">Search countries...</span>
+                <span className="hidden md:inline">{t("common.search")}</span>
                 <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-                    <span className="text-xs">⌘</span>K
+                    <span className="text-xs">⌘</span>
+                    {t("commandCombo.search")}
                 </kbd>
             </Button>
             <CommandDialog
@@ -75,13 +78,13 @@ export default function CountrySearch() {
                 aria-label="Find Country"
             >
                 <CommandInput
-                    placeholder="Search for a country..."
+                    placeholder={t("common.search")}
                     value={search}
                     onValueChange={setSearch}
                 />
                 <CommandList>
-                    <CommandEmpty>"No countries found."</CommandEmpty>
-                    <CommandGroup heading="Countries">
+                    <CommandEmpty>{t("common.noCountriesFound")}</CommandEmpty>
+                    <CommandGroup heading={t("common.countries")}>
                         {filteredCountries.map((geography) => (
                             <CommandItem
                                 key={geography.properties.name}

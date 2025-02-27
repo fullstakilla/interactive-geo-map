@@ -9,16 +9,9 @@ import {
 import DeleteNoteButton from "./ui/delete-note-button";
 import { useNotesStore } from "@/store/useNotesStore";
 import { useMapZoomStore } from "@/store/useMapZoomStore";
-import { useEffect, useMemo } from "react";
-import { Note } from "@prisma/client";
+import { useEffect } from "react";
 import { useClusterization } from "@/hooks/useClusterization";
 import { useSession } from "next-auth/react";
-import { cn } from "@/lib/utils";
-
-interface Cluster {
-    coordinates: [number, number];
-    notes: Note[];
-}
 
 export default function NoteMarkers() {
     const { data: session } = useSession();
@@ -40,7 +33,7 @@ export default function NoteMarkers() {
 
     if (isLoading || error !== null || notes.length === 0) return null;
 
-    console.log("clusters:", clusters.length, "notes total:", notes.length);
+    console.log("note markers render, total notes:", notes.length);
 
     return (
         <>

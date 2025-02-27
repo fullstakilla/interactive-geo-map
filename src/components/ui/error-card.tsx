@@ -6,8 +6,11 @@ import {
     CardFooter,
 } from "./card";
 import { Button } from "./button";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 export function ErrorCard({ error }: { error: string }) {
+    const { t } = useAppSettingsStore();
+
     return (
         <div className="w-screen h-screen flex items-center justify-center">
             <Card className="w-[380px] border-red-200 bg-red-50/90 backdrop-blur-sm">
@@ -28,11 +31,11 @@ export function ErrorCard({ error }: { error: string }) {
                             />
                         </svg>
                         <CardTitle className="text-red-700">
-                            Map Loading Error
+                            {t("error.map.title")}
                         </CardTitle>
                     </div>
                     <CardDescription className="text-red-600">
-                        Failed to load geographical data
+                        {t("error.map.description")}
                     </CardDescription>
                 </CardHeader>
                 <div className="px-6 py-2">
@@ -46,7 +49,7 @@ export function ErrorCard({ error }: { error: string }) {
                         onClick={() => window.location.reload()}
                         className="border-red-200 text-red-700 hover:bg-red-100"
                     >
-                        Try Again
+                        {t("common.tryAgain")}
                     </Button>
                 </CardFooter>
             </Card>

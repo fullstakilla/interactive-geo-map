@@ -15,7 +15,10 @@ export function MyLocationButton() {
     if (!myNote) return null;
 
     const handleClick = () => {
-        setPosition(6, myNote.userLocation as [number, number]);
+        setPosition(6, myNote.userLocation as [number, number], [
+            [-180, -85],
+            [180, 85],
+        ]);
     };
 
     return (
@@ -25,7 +28,6 @@ export function MyLocationButton() {
                 size="icon"
                 onClick={handleClick}
                 className="bg-white hover:bg-white/90 text-black shadow-lg"
-                title="Моя метка"
             >
                 <MapPin className="h-4 w-4" />
             </Button>

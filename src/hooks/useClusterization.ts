@@ -26,7 +26,7 @@ export function useClusterization(
     options: ClusterizationOptions = {}
 ) {
     const bounds = useMapZoomStore((state) => state.bounds);
-    const { radius = 75, minZoom = 1, maxZoom = 5 } = options;
+    const { radius, minZoom, maxZoom } = options;
 
     return useMemo(() => {
         if (!notes.length) return [];
@@ -40,20 +40,17 @@ export function useClusterization(
                 nodeSize: 64,
             });
 
-            // При маленьком зуме используем все точки
             const currentZoom = Math.floor(zoom);
             const isLowZoom = currentZoom <= 2;
 
-            // Если маленький зум - берем все точки, иначе фильтруем по bounds
             const visibleNotes = isLowZoom
                 ? notes.filter((note) => isValidLocation(note.userLocation))
                 : notes.filter((note) => {
                       if (!isValidLocation(note.userLocation)) return false;
 
                       const [lng, lat] = note.userLocation;
-                      const padding = isLowZoom ? 50 : 10; // Больший padding для маленького зума
+                      const padding = isLowZoom ? 50 : 10;
 
-                      // Расширенные границы для маленького зума
                       const [minLng, maxLng] = isLowZoom
                           ? [-180, 180]
                           : [
@@ -90,7 +87,6 @@ export function useClusterization(
 
             index.load(features as any);
 
-            // Используем полные границы карты для маленького зума
             const clusterBounds = isLowZoom
                 ? [-180, -85, 180, 85]
                 : [
@@ -103,10 +99,6 @@ export function useClusterization(
             const clusters = index.getClusters(
                 clusterBounds as any,
                 currentZoom
-            );
-
-            console.log(
-                `Zoom: ${currentZoom}, Visible clusters: ${clusters.length}, Visible points: ${visibleNotes.length}, Total points: ${notes.length}`
             );
 
             return clusters.map((cluster) => {
@@ -147,7 +139,7 @@ export function useClusterization(
             });
         } catch (error) {
             console.error("Clustering error:", error);
-            // При ошибке возвращаем все точки для маленького зума
+
             const isLowZoom = Math.floor(zoom) <= 2;
             return (
                 isLowZoom

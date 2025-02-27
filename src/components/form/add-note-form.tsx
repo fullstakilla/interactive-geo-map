@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
 import { getCurrentLocation } from "@/actions/location";
 import { useSession } from "next-auth/react";
 import { useNotesStore } from "@/store/useNotesStore";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 export const noteSchema = z.object({
     userName: z.string().min(1, "Name is required"),
@@ -36,10 +37,6 @@ export const noteSchema = z.object({
             ];
             return patterns.some((pattern) => pattern.test(url));
         }, "Only YouTube, Twitter, or Instagram URLs are allowed"),
-    // userLocation: z
-    //     .array(z.number())
-    //     .length(2, "Location must have latitude and longitude"),
-    // userEmail: z.string().email("Invalid email"),
 });
 
 type FormData = z.infer<typeof noteSchema>;
@@ -54,6 +51,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     const { data: session } = useSession();
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const fetchNotes = useNotesStore((state) => state.fetchNotes);
+    const { t } = useAppSettingsStore();
 
     const {
         register,
@@ -69,7 +67,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     });
 
     const onSubmit = async (data: FormData) => {
-        const submitToast = toast.loading("Creating your note...");
+        const submitToast = toast.loading(t("note.create.loading"));
 
         try {
             const locationResult = await getCurrentLocation();
@@ -95,15 +93,13 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
             fetchNotes();
 
             toast.dismiss(submitToast);
-            toast.success("Note created successfully! Placing on the map...");
+            toast.success(t("note.create.success"));
 
             closeButtonRef.current?.click();
             reset();
         } catch (error) {
             toast.dismiss(submitToast);
-            toast.error(
-                error instanceof Error ? error.message : "Failed to create note"
-            );
+            toast.error(t("note.create.error"));
         }
     };
 
@@ -135,24 +131,25 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
                 >
                     <span>➕</span>
                     <span className="hidden md:inline">
-                        Add a lovely note...
+                        {t("note.create.title")}
                     </span>
                     <kbd className="hidden md:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100">
-                        <span className="text-xs">⌘</span>A
+                        <span className="text-xs">⌘</span>
+                        {t("commandCombo.add")}
                     </kbd>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
-                    <DialogTitle>Create New Post</DialogTitle>
+                    <DialogTitle>{t("note.create.title")}</DialogTitle>
                     <DialogDescription>
-                        Make sure to approve your geolocation after submitting.
+                        {t("note.create.description")}
                     </DialogDescription>
                 </DialogHeader>
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                     <FormField
-                        label="Name"
-                        description="Your display name for the post"
+                        label={t("note.create.name")}
+                        description={t("note.create.nameDescription")}
                         error={errors.userName?.message}
                     >
                         <Input
@@ -165,21 +162,21 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
                     </FormField>
 
                     <FormField
-                        label="Message"
-                        description="Share your thoughts with the community"
+                        label={t("note.create.message")}
+                        description={t("note.create.messageDescription")}
                         error={errors.content?.message}
                     >
                         <Textarea
                             {...register("content")}
                             className="w-full min-h-[100px] p-2 border rounded"
-                            placeholder="What's on your mind?"
+                            placeholder={t("note.create.messagePlaceholder")}
                             rows={4}
                         />
                     </FormField>
 
                     <FormField
-                        label="Social Media Link (optional)"
-                        description="Add a Instagram, Twitter, or Youtube link"
+                        label={t("note.create.social")}
+                        description={t("note.create.socialDescription")}
                         error={errors.socialUrl?.message}
                     >
                         <Input
@@ -190,7 +187,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
                     </FormField>
 
                     <Button type="submit" className="w-full">
-                        Create Post
+                        {t("note.create.submit")}
                     </Button>
                 </form>
                 <DialogClose ref={closeButtonRef} className="hidden" />

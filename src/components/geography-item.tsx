@@ -12,16 +12,17 @@ export const GeographyItem: React.FC<GeographyItemProps> = ({
     onClick,
 }) => {
     const pickedCountry = useGeoDataStore((state) => state.pickedCountry);
+    const ifPicked = pickedCountry === geo.properties.name;
 
     return (
         <Geography
             geography={geo}
             fill="#2C3639"
-            stroke="#DCD7C9"
-            strokeWidth={0.2}
+            stroke={ifPicked ? "#FFA500" : "#DCD7C9"}
+            strokeWidth={ifPicked ? 0.4 : 0.2}
             className={cn(
-                "transition-colors duration-200 focus:outline-none hover:fill-[#445D48]", // бежевый для ховера
-                pickedCountry === geo.properties.name ? "fill-[#445D48]" : "" // тот же бежевый для выбранной страны
+                "transition-colors duration-200 focus:outline-none hover:fill-[#445D48]",
+                ifPicked ? "fill-[#445D48]" : ""
             )}
             onClick={onClick}
         />

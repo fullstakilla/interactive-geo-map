@@ -6,18 +6,21 @@ import { useEffect } from "react";
 
 import { useSession } from "next-auth/react";
 import { useState } from "react";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 export function HelloToast() {
+    const { t } = useAppSettingsStore();
     const { data: session, status } = useSession();
     const [hasShownToast, setHasShownToast] = useState(false);
 
-    // toast для приветствия
     useEffect(() => {
         if (status === "authenticated" && session?.user && !hasShownToast) {
-            toast.success(`Welcome, ${session.user.name}!`);
+            toast.success(
+                t("common.welcome", { name: session.user.name as any })
+            );
             setHasShownToast(true);
         }
-    }, [status, session, hasShownToast]);
+    }, [status, session, hasShownToast, t]);
 
     return null;
 }

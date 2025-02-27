@@ -10,7 +10,6 @@ import { useCallback, useEffect, useState, WheelEventHandler } from "react";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
 import { useMapZoomStore } from "@/store/useMapZoomStore";
 import { useAppSettingsStore } from "@/store/useAppSettingsStore";
-import { geoMercator } from "d3-geo";
 import { getBounds } from "@/lib/getBounds";
 
 const projectionConfig: ProjectionConfig = {
@@ -43,13 +42,12 @@ export const WorldMap: React.FC<WorldMapProps> = ({ geoData }) => {
             zoom: number;
             bounds: [[number, number], [number, number]];
         }) => {
-            console.log("zoom", zoom);
             setPosition(zoom, coordinates, bounds);
         },
         [setPosition]
     );
 
-    console.log("worldmap render");
+    console.log("world map render");
 
     return (
         <div className="relative w-full h-screen">

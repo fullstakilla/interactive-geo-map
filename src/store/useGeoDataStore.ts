@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { toast } from "sonner";
 import { getGeoData } from "@/actions/geo-data";
-import { GeoJSONFeature, TopoJSON } from "@/types/TopoJSON";
+import { GeoJSONFeature, TopoJSON } from "@/types/geo";
 
 interface GeoDataState {
     data: TopoJSON | null;
@@ -48,7 +48,6 @@ export const useGeoDataStore = create<GeoDataState>((set) => ({
 
             const data = await getGeoData();
 
-            // Cache the fresh data
             localStorage.setItem(
                 CACHE_KEY,
                 JSON.stringify({

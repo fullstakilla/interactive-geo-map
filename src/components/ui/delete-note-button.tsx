@@ -4,6 +4,7 @@ import { deleteNote } from "@/actions/notes";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
+import { useAppSettingsStore } from "@/store/useAppSettingsStore";
 
 interface DeleteNoteButtonProps {
     noteId: string;
@@ -19,6 +20,7 @@ export default function DeleteNoteButton({
     onSubmit,
 }: DeleteNoteButtonProps) {
     const { data: session } = useSession();
+    const { t } = useAppSettingsStore();
 
     if (!session || !session.user || session.user.email !== ownerEmail)
         return null;
@@ -26,10 +28,10 @@ export default function DeleteNoteButton({
     const handleDelete = async () => {
         const result = await deleteNote(noteId);
         if (result.success) {
-            toast.success("Your note was deleted.");
+            toast.success(t("note.delete.success"));
             onSubmit();
         } else {
-            toast.error(result.error || "Failed to delete note");
+            toast.error(t("note.delete.error"));
         }
     };
 

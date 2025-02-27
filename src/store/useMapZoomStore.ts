@@ -45,7 +45,7 @@ export const useMapZoomStore = create<MapZoomState>((set) => ({
 
         set({
             center: centroid || [15, 38],
-            zoom: 5,
+            zoom: 6,
         });
     },
     zoomToCluster: (coordinates: [number, number]) => {
