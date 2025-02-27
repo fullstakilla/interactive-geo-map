@@ -4,7 +4,12 @@ import { create } from "zustand";
 interface MapZoomState {
     zoom: number;
     center: [number, number];
-    setPosition: (zoom: number, center: [number, number]) => void;
+    bounds: [[number, number], [number, number]];
+    setPosition: (
+        zoom: number,
+        center: [number, number],
+        bounds: [[number, number], [number, number]]
+    ) => void;
     zoomToGeography: (geography: any) => void;
     zoomToCluster: (coordinates: [number, number]) => void;
 }
@@ -21,8 +26,15 @@ export const projection = () => {
 export const useMapZoomStore = create<MapZoomState>((set) => ({
     zoom: 1,
     center: [15, 38],
-    setPosition: (zoom: number, center: [number, number]) =>
-        set({ zoom, center }),
+    bounds: [
+        [-180, -85],
+        [180, 85],
+    ],
+    setPosition: (
+        zoom: number,
+        center: [number, number],
+        bounds: [[number, number], [number, number]]
+    ) => set({ zoom, center, bounds }),
     zoomToGeography: (geography) => {
         const projectionInstance = projection();
         if (!projectionInstance) return;

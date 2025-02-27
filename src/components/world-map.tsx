@@ -6,10 +6,12 @@ import {
 } from "react-simple-maps";
 import { GeographyItem } from "./geography-item";
 import NoteMarkers from "./note-markers";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, WheelEventHandler } from "react";
 import { useGeoDataStore } from "@/store/useGeoDataStore";
 import { useMapZoomStore } from "@/store/useMapZoomStore";
 import { useAppSettingsStore } from "@/store/useAppSettingsStore";
+import { geoMercator } from "d3-geo";
+import { getBounds } from "@/lib/getBounds";
 
 const projectionConfig: ProjectionConfig = {
     scale: 160,
@@ -35,13 +37,16 @@ export const WorldMap: React.FC<WorldMapProps> = ({ geoData }) => {
         ({
             coordinates,
             zoom,
+            bounds,
         }: {
             coordinates: [number, number];
             zoom: number;
+            bounds: [[number, number], [number, number]];
         }) => {
-            setPosition(zoom, coordinates);
+            console.log("zoom", zoom);
+            setPosition(zoom, coordinates, bounds);
         },
-        []
+        [setPosition]
     );
 
     console.log("worldmap render");
@@ -62,7 +67,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({ geoData }) => {
                         [-100, -300],
                         [900, 800],
                     ]}
-                    onMoveEnd={handleMoveEnd}
+                    onMoveEnd={({ coordinates, zoom }) => {
+                        const bounds = getBounds(coordinates, zoom);
+                        handleMoveEnd({ coordinates, zoom, bounds });
+                    }}
                 >
                     <Geographies geography={geoData}>
                         {({ geographies }) => (

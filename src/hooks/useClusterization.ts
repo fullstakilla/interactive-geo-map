@@ -1,17 +1,7 @@
+import { useMapZoomStore } from "@/store/useMapZoomStore";
 import { Note } from "@prisma/client";
 import { useMemo } from "react";
 import Supercluster from "supercluster";
-
-interface Cluster {
-    coordinates: [number, number];
-    notes: Note[];
-    id: number;
-    properties: {
-        cluster: boolean;
-        cluster_id: number;
-        point_count: number;
-    };
-}
 
 interface ClusterizationOptions {
     radius?: number;
@@ -19,19 +9,14 @@ interface ClusterizationOptions {
     maxZoom?: number;
 }
 
-// Функция для проверки валидности координат
-function isValidCoordinate(coord: any): coord is [number, number] {
+function isValidLocation(location: any): location is [number, number] {
     return (
-        Array.isArray(coord) &&
-        coord.length === 2 &&
-        typeof coord[0] === "number" &&
-        typeof coord[1] === "number" &&
-        !isNaN(coord[0]) &&
-        !isNaN(coord[1]) &&
-        coord[0] >= -180 &&
-        coord[0] <= 180 &&
-        coord[1] >= -85 &&
-        coord[1] <= 85
+        Array.isArray(location) &&
+        location.length === 2 &&
+        typeof location[0] === "number" &&
+        typeof location[1] === "number" &&
+        !isNaN(location[0]) &&
+        !isNaN(location[1])
     );
 }
 
@@ -40,13 +25,13 @@ export function useClusterization(
     zoom: number,
     options: ClusterizationOptions = {}
 ) {
+    const bounds = useMapZoomStore((state) => state.bounds);
     const { radius = 75, minZoom = 1, maxZoom = 5 } = options;
 
     return useMemo(() => {
         if (!notes.length) return [];
 
         try {
-            // Настраиваем Supercluster с измененными параметрами
             const index = new Supercluster({
                 radius: radius,
                 maxZoom: maxZoom,
@@ -55,15 +40,47 @@ export function useClusterization(
                 nodeSize: 64,
             });
 
-            // Преобразуем заметки в GeoJSON Features
-            const features = notes.map((note) => ({
+            // При маленьком зуме используем все точки
+            const currentZoom = Math.floor(zoom);
+            const isLowZoom = currentZoom <= 2;
+
+            // Если маленький зум - берем все точки, иначе фильтруем по bounds
+            const visibleNotes = isLowZoom
+                ? notes.filter((note) => isValidLocation(note.userLocation))
+                : notes.filter((note) => {
+                      if (!isValidLocation(note.userLocation)) return false;
+
+                      const [lng, lat] = note.userLocation;
+                      const padding = isLowZoom ? 50 : 10; // Больший padding для маленького зума
+
+                      // Расширенные границы для маленького зума
+                      const [minLng, maxLng] = isLowZoom
+                          ? [-180, 180]
+                          : [
+                                Math.min(bounds[0][0], bounds[1][0]) - padding,
+                                Math.max(bounds[0][0], bounds[1][0]) + padding,
+                            ];
+
+                      const [minLat, maxLat] = isLowZoom
+                          ? [-85, 85]
+                          : [
+                                Math.min(bounds[0][1], bounds[1][1]) - padding,
+                                Math.max(bounds[0][1], bounds[1][1]) + padding,
+                            ];
+
+                      return (
+                          lng >= minLng &&
+                          lng <= maxLng &&
+                          lat >= minLat &&
+                          lat <= maxLat
+                      );
+                  });
+
+            const features = visibleNotes.map((note) => ({
                 type: "Feature",
                 geometry: {
                     type: "Point",
-                    coordinates: [
-                        (note.userLocation as number[])[0],
-                        (note.userLocation as number[])[1],
-                    ],
+                    coordinates: note.userLocation as [number, number],
                 },
                 properties: {
                     noteId: note.id,
@@ -71,18 +88,25 @@ export function useClusterization(
                 },
             }));
 
-            // Загружаем features
             index.load(features as any);
 
-            // Получаем кластеры с учетом текущего зума
-            const currentZoom = Math.floor(zoom);
+            // Используем полные границы карты для маленького зума
+            const clusterBounds = isLowZoom
+                ? [-180, -85, 180, 85]
+                : [
+                      Math.min(bounds[0][0], bounds[1][0]),
+                      Math.min(bounds[0][1], bounds[1][1]),
+                      Math.max(bounds[0][0], bounds[1][0]),
+                      Math.max(bounds[0][1], bounds[1][1]),
+                  ];
+
             const clusters = index.getClusters(
-                [-180, -85, 180, 85],
+                clusterBounds as any,
                 currentZoom
             );
 
             console.log(
-                `Zoom: ${currentZoom}, Total clusters: ${clusters.length}, Original points: ${notes.length}`
+                `Zoom: ${currentZoom}, Visible clusters: ${clusters.length}, Visible points: ${visibleNotes.length}, Total points: ${notes.length}`
             );
 
             return clusters.map((cluster) => {
@@ -123,7 +147,22 @@ export function useClusterization(
             });
         } catch (error) {
             console.error("Clustering error:", error);
-            return notes.map((note) => ({
+            // При ошибке возвращаем все точки для маленького зума
+            const isLowZoom = Math.floor(zoom) <= 2;
+            return (
+                isLowZoom
+                    ? notes
+                    : notes.filter((note) => {
+                          if (!isValidLocation(note.userLocation)) return false;
+                          const [lng, lat] = note.userLocation;
+                          return (
+                              lng >= bounds[0][0] - 10 &&
+                              lng <= bounds[1][0] + 10 &&
+                              lat >= bounds[0][1] - 10 &&
+                              lat <= bounds[1][1] + 10
+                          );
+                      })
+            ).map((note) => ({
                 coordinates: note.userLocation as [number, number],
                 notes: [note],
                 id: note.id,
@@ -134,117 +173,5 @@ export function useClusterization(
                 },
             }));
         }
-    }, [notes, zoom, radius, minZoom, maxZoom]);
+    }, [notes, zoom, radius, minZoom, maxZoom, bounds]);
 }
-
-// import { Note } from "@prisma/client";
-// import { useMemo } from "react";
-
-// interface Cluster {
-//     coordinates: [number, number];
-//     notes: Note[];
-// }
-
-// interface ClusterizationOptions {
-//     maxClusterDistance?: number;
-//     minZoom?: number;
-//     maxZoom?: number;
-// }
-
-// export function useClusterization(
-//     notes: Note[],
-//     zoom: number,
-//     options: ClusterizationOptions = {}
-// ) {
-//     const { maxClusterDistance = 20, minZoom = 1, maxZoom = 4 } = options;
-
-//     return useMemo(() => {
-//         if (!notes.length) return [];
-
-//         const clusterDistance = Math.max(
-//             maxClusterDistance * (1 - (zoom - minZoom) / (maxZoom - minZoom)),
-//             0.5
-//         );
-
-//         if (zoom >= maxZoom) {
-//             return notes.map((note) => ({
-//                 coordinates: note.userLocation as [number, number],
-//                 notes: [note],
-//             }));
-//         }
-
-//         const clustersMap = new Map<string, Cluster>();
-
-//         notes.forEach((note) => {
-//             const [lng, lat] = note.userLocation as [number, number];
-//             const gridSize = clusterDistance;
-//             const gridX = Math.floor(lng / gridSize);
-//             const gridY = Math.floor(lat / gridSize);
-//             const key = `${gridX}:${gridY}`;
-
-//             if (!clustersMap.has(key)) {
-//                 let shouldCreateNewCluster = true;
-
-//                 for (const existingCluster of Array.from(
-//                     clustersMap.values()
-//                 )) {
-//                     const [existingLng, existingLat] =
-//                         existingCluster.coordinates;
-//                     const distance = Math.sqrt(
-//                         Math.pow(existingLng - lng, 2) +
-//                             Math.pow(existingLat - lat, 2)
-//                     );
-
-//                     if (distance > maxClusterDistance) {
-//                         continue;
-//                     }
-
-//                     existingCluster.notes.push(note);
-
-//                     const newCenter: [number, number] = [
-//                         (existingCluster.coordinates[0] *
-//                             existingCluster.notes.length +
-//                             lng) /
-//                             (existingCluster.notes.length + 1),
-//                         (existingCluster.coordinates[1] *
-//                             existingCluster.notes.length +
-//                             lat) /
-//                             (existingCluster.notes.length + 1),
-//                     ];
-//                     existingCluster.coordinates = newCenter;
-
-//                     shouldCreateNewCluster = false;
-//                     break;
-//                 }
-
-//                 if (shouldCreateNewCluster) {
-//                     clustersMap.set(key, {
-//                         coordinates: [lng, lat],
-//                         notes: [note],
-//                     });
-//                 }
-//             } else {
-//                 const cluster = clustersMap.get(key)!;
-//                 cluster.notes.push(note);
-
-//                 const sumCoords = cluster.notes.reduce(
-//                     (acc, n) => {
-//                         const [noteLng, noteLat] = n.userLocation as [
-//                             number,
-//                             number
-//                         ];
-//                         return [acc[0] + noteLng, acc[1] + noteLat];
-//                     },
-//                     [0, 0]
-//                 );
-
-//                 cluster.coordinates = [
-//                     sumCoords[0] / cluster.notes.length,
-//                     sumCoords[1] / cluster.notes.length,
-//                 ];
-//             }
-//         });
-
-//         return Array.from(clustersMap.values());
-//     }, [notes, zoom, maxClusterDistance, minZoom, maxZoom]);
-// }
