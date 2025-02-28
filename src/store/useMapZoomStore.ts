@@ -37,15 +37,23 @@ export const useMapZoomStore = create<MapZoomState>((set) => ({
     ) => set({ zoom, center, bounds }),
     zoomToGeography: (geography) => {
         const projectionInstance = projection();
-        if (!projectionInstance) return;
+        if (!projectionInstance || !projectionInstance.invert) return;
 
         const path = geoPath().projection(projectionInstance);
+        const bounds = path.bounds(geography);
         const pathCentroid = path.centroid(geography);
-        const centroid = projectionInstance?.invert?.(pathCentroid) ?? [15, 38];
+        const centroid = projectionInstance.invert(pathCentroid) ?? [15, 38];
+
+        const [[x0, y0], [x1, y1]] = bounds;
+        const geoBounds: [[number, number], [number, number]] = [
+            projectionInstance.invert([x0, y0]) as [number, number],
+            projectionInstance.invert([x1, y1]) as [number, number],
+        ];
 
         set({
-            center: centroid || [15, 38],
+            center: centroid as [number, number],
             zoom: 6,
+            bounds: geoBounds,
         });
     },
     zoomToCluster: (coordinates: [number, number]) => {

@@ -9,15 +9,18 @@ export function MyLocationButton() {
     const { setPosition } = useMapZoomStore();
     const notes = useNotesStore((state) => state.notes);
 
-    if (!session?.user?.email) return null;
+    if (!session) return null;
 
-    const myNote = notes.find((note) => note.userEmail === session.user.email);
+    const myNote = notes.find((note) => note.userEmail === session.user!.email);
     if (!myNote) return null;
 
     const handleClick = () => {
+        const [lng, lat] = myNote.userLocation as [number, number];
+        const padding = 40;
+
         setPosition(6, myNote.userLocation as [number, number], [
-            [-180, -85],
-            [180, 85],
+            [lng - padding, lat - padding],
+            [lng + padding, lat + padding],
         ]);
     };
 

@@ -16,9 +16,9 @@ datasource db {
 model Note {
   id          String   @id @default(uuid()) 
   content     String   
-  userLocation Float[] // Массив с двумя числами: [широта, долгота]    
-  userEmail   String   // Email пользователя  
-  userName    String   // Имя пользователя  
-  socialUrl   String?  // Необязательная ссылка  
+  userLocation Float[]  
+  userEmail   String
+  userName    String
+  socialUrl   String?
   createdAt   DateTime @default(now()) 
 }

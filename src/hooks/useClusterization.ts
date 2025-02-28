@@ -41,7 +41,42 @@ export function useClusterization(
             });
 
             const currentZoom = Math.floor(zoom);
-            const isLowZoom = currentZoom <= 2;
+            const isLowZoom = currentZoom < 2;
+
+            const handleDatelineBounds = (
+                bounds: [[number, number], [number, number]]
+            ) => {
+                const padding = 1;
+                let [minLng, maxLng] = [
+                    Math.min(bounds[0][0], bounds[1][0]) - padding,
+                    Math.max(bounds[0][0], bounds[1][0]) + padding,
+                ];
+
+                const [minLat, maxLat] = [
+                    Math.min(bounds[0][1], bounds[1][1]) - padding,
+                    Math.max(bounds[0][1], bounds[1][1]) + padding,
+                ];
+
+                if (maxLng < minLng || bounds[1][0] < bounds[0][0]) {
+                    return {
+                        minLng,
+                        maxLng,
+                        minLat,
+                        maxLat,
+                        crossesDateline: true,
+                    };
+                }
+
+                return {
+                    minLng,
+                    maxLng,
+                    minLat,
+                    maxLat,
+                    crossesDateline: false,
+                };
+            };
+
+            const boundsData = handleDatelineBounds(bounds);
 
             const visibleNotes = isLowZoom
                 ? notes.filter((note) => isValidLocation(note.userLocation))
@@ -49,21 +84,22 @@ export function useClusterization(
                       if (!isValidLocation(note.userLocation)) return false;
 
                       const [lng, lat] = note.userLocation;
-                      const padding = isLowZoom ? 50 : 10;
+                      const {
+                          minLng,
+                          maxLng,
+                          minLat,
+                          maxLat,
+                          crossesDateline,
+                      } = boundsData;
 
-                      const [minLng, maxLng] = isLowZoom
-                          ? [-180, 180]
-                          : [
-                                Math.min(bounds[0][0], bounds[1][0]) - padding,
-                                Math.max(bounds[0][0], bounds[1][0]) + padding,
-                            ];
-
-                      const [minLat, maxLat] = isLowZoom
-                          ? [-85, 85]
-                          : [
-                                Math.min(bounds[0][1], bounds[1][1]) - padding,
-                                Math.max(bounds[0][1], bounds[1][1]) + padding,
-                            ];
+                      if (crossesDateline) {
+                          return (
+                              ((lng >= minLng && lng <= 180) ||
+                                  (lng >= -180 && lng <= maxLng)) &&
+                              lat >= minLat &&
+                              lat <= maxLat
+                          );
+                      }
 
                       return (
                           lng >= minLng &&
@@ -89,11 +125,13 @@ export function useClusterization(
 
             const clusterBounds = isLowZoom
                 ? [-180, -85, 180, 85]
+                : boundsData.crossesDateline
+                ? [-180, boundsData.minLat, 180, boundsData.maxLat]
                 : [
-                      Math.min(bounds[0][0], bounds[1][0]),
-                      Math.min(bounds[0][1], bounds[1][1]),
-                      Math.max(bounds[0][0], bounds[1][0]),
-                      Math.max(bounds[0][1], bounds[1][1]),
+                      boundsData.minLng,
+                      boundsData.minLat,
+                      boundsData.maxLng,
+                      boundsData.maxLat,
                   ];
 
             const clusters = index.getClusters(

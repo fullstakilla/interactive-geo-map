@@ -33,11 +33,9 @@ export default function NoteMarkers() {
 
     if (isLoading || error !== null || notes.length === 0) return null;
 
-    console.log("note markers render, total notes:", notes.length);
-
     return (
         <>
-            {clusters.map((cluster, i) => {
+            {clusters.map((cluster) => {
                 if (cluster.notes.length === 1) {
                     const note = cluster.notes[0];
                     const isMyNote = session?.user?.email === note.userEmail;
@@ -101,7 +99,7 @@ export default function NoteMarkers() {
                 } else {
                     return (
                         <Marker
-                            key={cluster.coordinates[0]}
+                            key={cluster.id}
                             coordinates={cluster.coordinates}
                             onClick={() => zoomToCluster(cluster.coordinates)}
                         >

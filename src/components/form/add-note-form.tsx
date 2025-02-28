@@ -61,7 +61,7 @@ export function AddNoteForm({ userName, userEmail }: AddNoteFormProps) {
     } = useForm<FormData>({
         resolver: zodResolver(noteSchema),
         defaultValues: {
-            userName: session?.user.name || "",
+            userName: session?.user?.name || "",
             socialUrl: "https://instagram.com/...",
         },
     });

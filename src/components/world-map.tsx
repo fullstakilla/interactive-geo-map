@@ -43,11 +43,10 @@ export const WorldMap: React.FC<WorldMapProps> = ({ geoData }) => {
             bounds: [[number, number], [number, number]];
         }) => {
             setPosition(zoom, coordinates, bounds);
+            console.log("bounds", bounds);
         },
         [setPosition]
     );
-
-    console.log("world map render");
 
     return (
         <div className="relative w-full h-screen">
